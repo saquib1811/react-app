@@ -1,17 +1,45 @@
-import { restaurantList } from "../constants";
+import { swiggyUrl } from "../constants";
 import RestrauntCard from "./restrauntCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function filterData(searchText, restaurants) {
   const filterData = restaurants.filter((restaurant) =>
-    restaurant?.data?.name.toLowerCase().includes(searchText.toLowerCase())
+    restaurant?.info?.name.toLowerCase().includes(searchText.toLowerCase())
   );
   return filterData;
 }
 
 const Body = () => {
   const [searchText, setSearchText] = useState("");
-  const [restraunts, setRestraunts] = useState(restaurantList);
+  const [restraunts, setRestraunts] = useState([]);
+  useEffect(() => {
+    getRestraunts();
+  }, []);
+
+  async function getRestraunts() {
+    try {
+      const response = await fetch(swiggyUrl);
+      const json = await response.json();
+      async function checkJsonData(jsonData) {
+        for (let i = 0; i < jsonData?.data?.cards.length; i++) {
+          // initialize checkData for Swiggy Restaurant data
+          let checkData =
+            json?.data?.cards[i]?.card?.card?.gridElements?.infoWithStyle
+              ?.restaurants;
+
+          // if checkData is not undefined then return it
+          if (checkData !== undefined) {
+            return checkData;
+          }
+        }
+      }
+      // call the checkJsonData() function which return Swiggy Restaurant data
+      const resData = await checkJsonData(json);
+      setRestraunts(resData);
+    } catch (e) {
+      console.log(e);
+    }
+  }
   return (
     <>
       <div className="search-container">
@@ -27,20 +55,16 @@ const Body = () => {
         <button
           className="search-btn"
           onClick={() => {
-            if (searchText.trim() == "") {
-              setRestraunts(restaurantList);
-            } else {
-              const data = filterData(searchText, restraunts);
-              setRestraunts(data);
-            }
+            const data = filterData(searchText, restraunts);
+            setRestraunts(data);
           }}
         >
           Search
         </button>
       </div>
-      <div className="restraunt-list">
+      <div className="restaurant-list">
         {restraunts.map((restraunt) => {
-          return <RestrauntCard {...restraunt.data} key={restraunt.data.id} />;
+          return <RestrauntCard {...restraunt.info} key={restraunt.info.id} />;
         })}
       </div>
     </>
