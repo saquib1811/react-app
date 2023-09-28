@@ -1,6 +1,7 @@
 import { swiggyUrl } from "../constants";
 import RestrauntCard from "./restrauntCard";
 import { useEffect, useState } from "react";
+import Shimmer from "./Shimmer";
 
 function filterData(searchText, restaurants) {
   const filterData = restaurants.filter((restaurant) =>
@@ -11,7 +12,8 @@ function filterData(searchText, restaurants) {
 
 const Body = () => {
   const [searchText, setSearchText] = useState("");
-  const [restraunts, setRestraunts] = useState([]);
+  const [allRestraunts, setallRestraunts] = useState([]);
+  const [filteredRestraunts, setfilteredRestraunts] = useState([]);
   useEffect(() => {
     getRestraunts();
   }, []);
@@ -35,7 +37,8 @@ const Body = () => {
       }
       // call the checkJsonData() function which return Swiggy Restaurant data
       const resData = await checkJsonData(json);
-      setRestraunts(resData);
+      setallRestraunts(resData);
+      setfilteredRestraunts(resData);
     } catch (e) {
       console.log(e);
     }
@@ -55,18 +58,19 @@ const Body = () => {
         <button
           className="search-btn"
           onClick={() => {
-            const data = filterData(searchText, restraunts);
-            setRestraunts(data);
+            const data = filterData(searchText, allRestraunts);
+            setfilteredRestraunts(data);
           }}
         >
           Search
         </button>
       </div>
-      <div className="restaurant-list">
-        {restraunts.map((restraunt) => {
+      {(filteredRestraunts.length == 0) ? (<Shimmer/>) :(<div className="restaurant-list">
+        {filteredRestraunts.map((restraunt) => {
           return <RestrauntCard {...restraunt.info} key={restraunt.info.id} />;
         })}
-      </div>
+      </div>) }
+      
     </>
   );
 };
