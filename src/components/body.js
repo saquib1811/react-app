@@ -14,6 +14,7 @@ const Body = () => {
   const [searchText, setSearchText] = useState("");
   const [allRestraunts, setallRestraunts] = useState([]);
   const [filteredRestraunts, setfilteredRestraunts] = useState([]);
+  const [errMessage, setErrMessage] = useState("");
   useEffect(() => {
     getRestraunts();
   }, []);
@@ -43,6 +44,19 @@ const Body = () => {
       console.log(e);
     }
   }
+  async function SearchData(text,restraunts){
+    if(text !== ''){
+      if(restraunts.length === 0){
+        setErrMessage("No Restraunts Found.")
+      }else{
+        const data = filterData(searchText, allRestraunts);
+        setfilteredRestraunts(data);
+      }
+    }else{
+      setErrMessage("")
+      setfilteredRestraunts(restraunts);
+    }
+  }
   return (
     <>
       <div className="search-container">
@@ -65,6 +79,7 @@ const Body = () => {
           Search
         </button>
       </div>
+      {errMessage && <div className="error-container">{errMessage}</div>}
       {(filteredRestraunts.length == 0) ? (<Shimmer/>) :(<div className="restaurant-list">
         {filteredRestraunts.map((restraunt) => {
           return <RestrauntCard {...restraunt.info} key={restraunt.info.id} />;
